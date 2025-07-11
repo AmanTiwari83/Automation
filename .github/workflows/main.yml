@@ -1,0 +1,68 @@
+name: Run Build and Make Docker Image
+
+on: [push]
+
+jobs:
+  lint:
+    name: Lint App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint
+        run: npm run lint
+
+  build:
+    name: Build App
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the app
+        run: npm run build
+
+  docker:
+    name: Dockerize and Push
+    runs-on: ubuntu-latest
+    needs: build
+
+    env:
+      IMAGE_NAME: amantiwari83/automation
+      TAG: latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME:$TAG .
+
+      - name: Push Docker image
+        run: docker push $IMAGE_NAME:$TAG
