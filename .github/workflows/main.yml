@@ -1,6 +1,8 @@
 name: Run Build and Make Docker Image
 
-on: [push]
+on: 
+  push:
+    branches: [main]
 
 jobs:
   lint:
